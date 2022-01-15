@@ -216,7 +216,7 @@ func (a *RealtimeDBFunction) HandleCloudEvent(ctx context.Context, md *metadata.
 
 // Name returns the name of the function: "rtdb.ref.{write,create,delete,update}-{path-segments}"
 func (a *RealtimeDBFunction) Name() string {
-	return strings.ToLower(fmt.Sprintf("%s-%s", a.event, normalizeRegexp.ReplaceAllString(a.Resource(), "-$1")))
+	return fmt.Sprintf("%s-%s", a.event, normalizeRegexp.ReplaceAllString(a.Resource(), "-$1"))
 }
 
 // Resource returns the resource of the function: "ref/{ref-id}/...."

@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"cloud.google.com/go/functions/metadata"
 )
 
 // PubSub registers a function to the specified event, or returns the existing function if one already exists
 func (f *FunctionRegistrar) PubSub(topic string) *PubSubFunction {
-	if cf, ok := f.events[strings.ToLower(fmt.Sprintf("%s-%s", PubSubPublishEvent, topic))]; ok {
+	if cf, ok := f.events[fmt.Sprintf("%s-%s", PubSubPublishEvent, topic)]; ok {
 		if p, ok := cf.(*PubSubFunction); ok {
 			return p
 		}
@@ -83,7 +82,7 @@ func (a *PubSubFunction) HandleCloudEvent(ctx context.Context, md *metadata.Meta
 
 // Name returns the name of the function: "pubsub.topic.publish/{topic}"
 func (a *PubSubFunction) Name() string {
-	return strings.ToLower(fmt.Sprintf("%s-%s", a.event, a.Resource()))
+	return fmt.Sprintf("%s-%s", a.event, a.Resource())
 }
 
 // Resource returns the resource of the function: "{topic}"

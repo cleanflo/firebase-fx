@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"cloud.google.com/go/functions/metadata"
@@ -45,7 +44,7 @@ func TestPubSub(t *testing.T) {
 		ps := reg.PubSub("test-topic").Publish(TestPubSubI{}, testPubSubFunc)
 
 		assert.Same(t, ps, reg.PubSub("test-topic"), "PubSub function should be registered")
-		assert.Same(t, ps, reg.events[strings.ToLower(fmt.Sprintf("%s-%s", PubSubPublishEvent, "test-topic"))], "PubSub function should be registered")
+		assert.Same(t, ps, reg.events[fmt.Sprintf("%s-%s", PubSubPublishEvent, "test-topic")], "PubSub function should be registered")
 		assert.NotNil(t, ps.fn, "PubSub function should be equal not nil")
 
 		t.Log("PubSub Function registered for UserCreateEvent")

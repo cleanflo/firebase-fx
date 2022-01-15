@@ -240,7 +240,7 @@ func (a *StorageFunction) HandleCloudEvent(ctx context.Context, md *metadata.Met
 
 // Name returns the name of the function: "storageObject{Archive,Delete,Finalize,Metadata}-{bucketref}"
 func (a *StorageFunction) Name() string {
-	return strings.ToLower(fmt.Sprintf("%s-%s", a.event, a.Resource()))
+	return fmt.Sprintf("%s-%s", a.event, a.Resource())
 }
 
 // Resource returns the resource of the function: "{bucketRef}"
