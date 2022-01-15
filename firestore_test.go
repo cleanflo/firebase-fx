@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -125,6 +126,8 @@ func TestFirestore(t *testing.T) {
 		assert.IsType(t, &TestFirestoreI{}, e.OldValue.Fields, "OldValue.Fields did not match expected type")
 		assert.IsType(t, &TestFirestoreI{}, e.Value.Fields, "Value.Fields did not match expected type")
 
+		fmt.Println(e.vars)
+
 		assert.Contains(t, e.vars, "uid", "vars did not contain expected key")
 		assert.Equal(t, "5914E2YLVWcUDHisQwQN", e.vars["uid"], "vars did not contain expected value")
 		return nil
@@ -150,7 +153,7 @@ func TestFirestore(t *testing.T) {
 
 	t.Run("Register Create", func(t *testing.T) {
 		fs := reg.Firestore().Collection("testColl").Document("{uid}").Create(TestFirestoreI{}, testFsFunc)
-		assert.Same(t, fs, reg.findFirestore(FirestoreDocumentCreateEvent, "testColl/*"), "Firestore function should be registered")
+		assert.Same(t, fs, reg.findFirestore(FirestoreDocumentCreateEvent, "projects/[project-name]/databases/(default)/documents/testColl/5914E2YLVWcUDHisQwQN"), "Firestore function should be registered")
 		assert.Same(t, fs, reg.firestore[FirestoreDocumentCreateEvent]["testColl/*"], "Firestore function should be registered")
 		assert.NotNil(t, fs.fn, "Firestore function should be equal not nil")
 
@@ -159,7 +162,7 @@ func TestFirestore(t *testing.T) {
 
 	t.Run("Register Delete", func(t *testing.T) {
 		fs := reg.Firestore().Collection("testColl").Document("{uid}").Delete(TestFirestoreI{}, testFsFunc)
-		assert.Same(t, fs, reg.findFirestore(FirestoreDocumentDeleteEvent, "testColl/*"), "Firestore function should be registered")
+		assert.Same(t, fs, reg.findFirestore(FirestoreDocumentDeleteEvent, "projects/[project-name]/databases/(default)/documents/testColl/5914E2YLVWcUDHisQwQN"), "Firestore function should be registered")
 		assert.Same(t, fs, reg.firestore[FirestoreDocumentDeleteEvent]["testColl/*"], "Firestore function should be registered")
 		assert.NotNil(t, fs.fn, "Firestore function should be equal not nil")
 

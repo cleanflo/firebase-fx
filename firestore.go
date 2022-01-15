@@ -514,7 +514,7 @@ func (a *FirestoreFunction) HandleCloudEvent(ctx context.Context, md *metadata.M
 		}
 	}
 
-	evt.vars = extractVars(breakRef(md.Resource.RawPath), a.pathWildcards)
+	evt.vars = extractVars(breakRef(evt.Value.Name), a.pathWildcards)
 	err = a.fn(ctx, evt)
 	if err != nil {
 		return Debug.Errf("registered firestorefunc failed [%s]: %s: FirestoreFunc %+v", md.EventType, err, a)
