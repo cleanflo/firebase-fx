@@ -41,7 +41,7 @@ Meant to expose a similar API to the Firebase Functions package for node.js.
 
 setup.go
 ```go
-package main
+package functions
 
 import (
 	"context"
@@ -50,10 +50,10 @@ import (
 	register "github.com/schmorrison/firebase-fx"
 )
 
-var MyEntryPoint = register.SharedEntryPoint
+var Register = register.Shared
 
 func init() {
-	register.Shared.PubSub("my-topic").Publish(MyCustomData{}, func(ctx context.Context, msg register.PubSubMessage) error {
+	Register.PubSub("my-topic").Publish(MyCustomData{}, func(ctx context.Context, msg register.PubSubMessage) error {
 		fmt.Println(msg.Topic)
 		if data, ok := msg.Data.(*MyCustomData); ok {
 			// do something with v
@@ -62,7 +62,7 @@ func init() {
 		return nil
 	})
 
-	register.Shared.Firestore().Collection("users").Document("{uid}").Create(MyUserData{}, func(ctx context.Context, e register.FirestoreEvent) error {
+	Register.Firestore().Collection("users").Document("{uid}").Create(MyUserData{}, func(ctx context.Context, e register.FirestoreEvent) error {
 		fmt.Println(e.Vars()["uid"])
 
 		if data, ok := e.Value.Fields.(*MyUserData); ok {
@@ -85,21 +85,23 @@ type MyCustomData struct {
 type MyUserData struct {
 	Email string
 }
+
 ```
 
-deploy.go
+deploy/deploy.go
 ```go
 package main
 
 import (
 	"fmt"
 
+	functions "github.com/cleanflo/firebase-fx/functions"
 	register "github.com/schmorrison/firebase-fx"
 )
 
 func main() {
-	fmt.Println(register.Shared.
-		WithEntrypoint("MyEntryPoint").
+	fmt.Println(functions.Register.
+		WithEntrypoint("Register.EntryPoint").
 		WithProjectID("my-project-id").
 		WithRuntime("go116").
 		Verbosity(register.DebugVerbosity).
@@ -111,10 +113,10 @@ func main() {
 
 command
 ```bash
-go run setup.go deploy.go
+$ go run deploy/deploy.go
 
-gcloud functions deploy  --entry-point MyEntryPoint --runtime go116 --project my-project-id --verbosity debug \
-pubsubpublish-my-topic --trigger-topic my-topic &&  \
-gcloud functions deploy  --entry-point MyEntryPoint --runtime go116 --project my-project-id --verbosity debug \
-firestoreDocCreate-users-uid --trigger-event providers/cloud.firestore/eventTypes/document.create --trigger-resource projects/my-project-id/databases/(default)/documents/users/{uid}
+gcloud functions deploy  --entry-point "Register.EntryPoint" --runtime "go116" --project "my-project-id" --verbosity "debug" \
+pubsubpublish-my-topic --trigger-topic "my-topic" &&  \
+gcloud functions deploy  --entry-point "Register.EntryPoint" --runtime "go116" --project "my-project-id" --verbosity "debug" \
+firestoreDocCreate-users-uid --trigger-event "providers/cloud.firestore/eventTypes/document.create" --trigger-resource "projects/my-project-id/databases/(default)/documents/users/{uid}"
 ```

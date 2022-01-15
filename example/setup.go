@@ -1,4 +1,4 @@
-package main
+package functions
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	register "github.com/schmorrison/firebase-fx"
 )
 
-var MyEntryPoint = register.SharedEntryPoint
+var Register = register.Shared
 
 func init() {
-	register.Shared.PubSub("my-topic").Publish(MyCustomData{}, func(ctx context.Context, msg register.PubSubMessage) error {
+	Register.PubSub("my-topic").Publish(MyCustomData{}, func(ctx context.Context, msg register.PubSubMessage) error {
 		fmt.Println(msg.Topic)
 		if data, ok := msg.Data.(*MyCustomData); ok {
 			// do something with v
@@ -19,7 +19,7 @@ func init() {
 		return nil
 	})
 
-	register.Shared.Firestore().Collection("users").Document("{uid}").Create(MyUserData{}, func(ctx context.Context, e register.FirestoreEvent) error {
+	Register.Firestore().Collection("users").Document("{uid}").Create(MyUserData{}, func(ctx context.Context, e register.FirestoreEvent) error {
 		fmt.Println(e.Vars()["uid"])
 
 		if data, ok := e.Value.Fields.(*MyUserData); ok {
