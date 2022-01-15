@@ -5,36 +5,36 @@
 Meant to expose a similar API to the Firebase Functions package for node.js.
 
 ### Features
- [] Deployment
-    [*] Output bash script
-	[] Profile memory for deployment: --memory flag
- [] HTTP triggers
-    [] Unauthenticated
-    [] Methods, Headers, Host, Query
-    [] Middleware
- [] Analytics
- [*] Firebase Authentication triggers
- [*] Firestore triggers
-    [*] Document path wildcards
-      [*] Access vars
-    [*] Custom data types
-    [] fx tagged fields
-      [*] string
-      [*] number = float64/int
-      [*] boolean = bool
-      [*] map = struct OR map[string]interface{}
-        [*] map = struct OR map[string]interface{}
-      [] array = []interface{}
-      [] geopoint = struct
-      [*] timestamp = time.Time
- [*] PubSub triggers
-    [*] Custom data types
- [*] Firebase Realtime Database triggers
-    [*] Path wildcards
-      [*] Access vars
-    [*] Custom data types - JSON tags
- [] Schedule triggers
- [] Storage triggers
+ - [ ] Deployment
+    - [x] Output bash script
+    - [ ] Profile memory for deployment: --memory flag
+ - [ ] HTTP triggers
+    - [ ] Unauthenticated
+    - [ ] Methods, Headers, Host, Query
+    - [ ] Middleware
+ - [ ] Analytics
+ - [x] Firebase Authentication triggers
+ - [x] Firestore triggers
+    - [x] Document path wildcards
+      - [x] Access vars
+    - [x] Custom data types
+    - [ ] fx tagged fields
+      - [x] string
+      - [x] number = float64/int
+      - [x] boolean = bool
+      - [x] map = struct OR map[string]interface{}
+        - [x] map = struct OR map[string]interface{}
+      - [ ] array = []interface{}
+      - [ ] geopoint = struct
+      - [x] timestamp = time.Time
+ - [x] PubSub triggers
+    - [x] Custom data types
+ - [x] Firebase Realtime Database triggers
+    - [x] Path wildcards
+      - [x] Access vars
+    - [x] Custom data types - JSON tags
+ - [ ] Schedule triggers
+ - [ ] Storage triggers
 
  ### Usage
 
