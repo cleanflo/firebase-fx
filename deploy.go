@@ -31,20 +31,20 @@ func (f *FunctionRegistrar) Deploy() (s string) {
 		if entrypoint == "" {
 			entrypoint = "register.SharedEntrypoint"
 		}
-		s += fmt.Sprintf(" --entry-point %s", f.entrypoint)
+		s += fmt.Sprintf(" --entry-point \"%s\"", f.entrypoint)
 
 		runtime := f.runtime
 		if runtime == "" {
 			runtime = "go116"
 		}
-		s += fmt.Sprintf(" --runtime %s", runtime)
+		s += fmt.Sprintf(" --runtime \"%s\"", runtime)
 
 		if projectId != "$PROJECT_ID" {
-			s += fmt.Sprintf(" --project %s", projectId)
+			s += fmt.Sprintf(" --project \"%s\"", projectId)
 		}
 
 		if f.verbosity != WarningVerbosity {
-			s += fmt.Sprintf(" --verbosity %s", f.verbosity)
+			s += fmt.Sprintf(" --verbosity \"%s\"", f.verbosity)
 		}
 
 		return s
@@ -56,23 +56,23 @@ func (f *FunctionRegistrar) Deploy() (s string) {
 		cmd := fmt.Sprintf("gcloud functions deploy %s \\\n", flags())
 		switch ev.Event() {
 		case AuthenticationUserCreateEvent.Type(), AuthenticationUserDeleteEvent.Type():
-			cmd += "%s --trigger-event %s"
+			cmd += "%s --trigger-event \"%s\""
 			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String()))
 
 		case FirestoreDocumentCreateEvent.Type(), FirestoreDocumentDeleteEvent.Type(), FirestoreDocumentUpdateEvent.Type(), FirestoreDocumentWriteEvent.Type():
-			cmd += "%s --trigger-event %s --trigger-resource projects/%s/databases/(default)/documents/%s"
+			cmd += "%s --trigger-event \"%s\" --trigger-resource \"projects/%s/databases/(default)/documents/%s\""
 			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), projectId, ev.Resource()))
 
 		case PubSubPublishEvent.Type():
-			cmd += "%s --trigger-topic %s"
+			cmd += "%s --trigger-topic \"%s\""
 			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Resource()))
 
 		case RealtimeDBRefCreateEvent.Type(), RealtimeDBRefDeleteEvent.Type(), RealtimeDBRefUpdateEvent.Type(), RealtimeDBRefWriteEvent.Type():
-			cmd += "%s --trigger-event %s --trigger-resource projects/_/instances/%s/refs/%s"
+			cmd += "%s --trigger-event \"%s\" --trigger-resource \"projects/_/instances/%s/refs/%s\""
 			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), projectId, ev.Resource()))
 
 		case StorageObjectFinalizeEvent.Type(), StorageObjectArchiveEvent.Type(), StorageObjectDeleteEvent.Type(), StorageObjectMetadataUpdateEvent.Type():
-			cmd += "%s --trigger-event %s --trigger-resource %s"
+			cmd += "%s --trigger-event \"%s\" --trigger-resource \"%s\""
 			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), ev.Resource()))
 		}
 	}
