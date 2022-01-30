@@ -2,7 +2,7 @@ module github.com/cleanflo/firebase-fx/functions
 
 go 1.17
 
-require github.com/schmorrison/firebase-fx v0.0.0
+require github.com/cleanflo/firebase-fx v0.0.7
 
 require (
 	cloud.google.com/go/functions v1.1.0 // indirect
@@ -11,4 +11,4 @@ require (
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 )
 
-replace github.com/schmorrison/firebase-fx => ../
+replace github.com/cleanflo/firebase-fx => ../

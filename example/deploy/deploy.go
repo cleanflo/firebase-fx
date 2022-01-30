@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
+	register "github.com/cleanflo/firebase-fx"
 	functions "github.com/cleanflo/firebase-fx/functions"
-	register "github.com/schmorrison/firebase-fx"
 )
 
 func main() {

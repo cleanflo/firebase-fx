@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	register "github.com/schmorrison/firebase-fx"
+	register "github.com/cleanflo/firebase-fx"
 )
 
 var Register = register.Shared
