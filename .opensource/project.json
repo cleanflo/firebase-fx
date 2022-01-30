@@ -1,0 +1,10 @@
+{
+    "name": "firebase-fx",
+    "platforms": [
+        "Go"
+    ],
+    "content": "README.md",
+    "related": [
+        "GoogleCloudPlatform/functions-framework-go"
+    ]
+}
