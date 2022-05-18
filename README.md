@@ -7,6 +7,8 @@ Meant to expose a similar API to the Firebase Functions package for node.js.
 ### Features
  - [ ] Deployment
     - [x] Output bash script
+    - [ ] Output Terraform configuration
+    - [ ] Upload source to Cloud Storage before deployment
     - [ ] Profile memory for deployment: --memory flag
  - [x] HTTP triggers
     - [x] Unauthenticated
