@@ -1,4 +1,4 @@
-module github.com/cleanflo/firebase-fx/functions
+module github.com/cleanflo/firebase-fx/example
 
 go 1.17
 

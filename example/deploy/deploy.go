@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	register "github.com/cleanflo/firebase-fx"
-	functions "github.com/cleanflo/firebase-fx/functions"
+	functions "github.com/cleanflo/firebase-fx/example"
 )
 
 func main() {
 	fmt.Println(functions.Register.
-		WithEntrypoint("Register.EntryPoint").
+		WithRegistrar("Register").
 		WithProjectID("my-project-id").
 		WithRuntime("go116").
 		Verbosity(register.DebugVerbosity).
