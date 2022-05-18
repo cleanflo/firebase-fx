@@ -63,7 +63,7 @@ func TestDeployCloud(t *testing.T) {
 	})
 
 	t.Run("Deploy", func(t *testing.T) {
-		fmt.Println(reg.DeployCloud())
+		fmt.Println(reg.WithRegistrar("Registrar").DeployCloud())
 	})
 }
 
@@ -73,11 +73,6 @@ func TestDeployHttp(t *testing.T) {
 		reg.HTTP("test", func(w http.ResponseWriter, r *http.Request) {
 		})
 
-		reg.RegisterHTTP(_RegTestHandler)
-
-		fmt.Println(reg.DeployHTTP())
+		fmt.Println(reg.WithRegistrar("Registrar").DeployHTTP())
 	})
-}
-
-func _RegTestHandler(w http.ResponseWriter, r *http.Request) {
 }

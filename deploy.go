@@ -28,15 +28,33 @@ type deployFlags struct {
 	verbosity  string
 }
 
-func (f *FunctionRegistrar) flags() (flag deployFlags) {
+type flagKind int
+
+func (f flagKind) entrypoint() string {
+	switch f {
+	case httpFlags:
+		return "HttpEntrypoint"
+	case cloudFlags:
+		return "Entrypoint"
+	default:
+		return ""
+	}
+}
+
+const (
+	httpFlags  flagKind = 0
+	cloudFlags flagKind = 1
+)
+
+func (f *FunctionRegistrar) flags(k flagKind) (flag deployFlags) {
 	flag.projectID = f.projectID
 	if flag.projectID == "" {
 		flag.projectID = "$PROJECT_ID"
 	}
 
-	flag.entrypoint = f.entrypoint
+	flag.entrypoint = fmt.Sprintf("%s.%s", f.registrar, k.entrypoint())
 	if flag.entrypoint == "" {
-		flag.entrypoint = "register.HttpEntrypoint"
+		flag.entrypoint = fmt.Sprintf("Registrar.%s", k.entrypoint())
 	}
 
 	flag.runtime = string(f.runtime)
@@ -74,7 +92,7 @@ func (f deployFlags) String() (s string) {
 }
 
 func (f *FunctionRegistrar) DeployCloud() (s string) {
-	flags := f.flags()
+	flags := f.flags(cloudFlags)
 
 	// walk the functions and register each one
 	cmds := []string{}
@@ -109,27 +127,20 @@ func (f *FunctionRegistrar) DeployCloud() (s string) {
 }
 
 func (f *FunctionRegistrar) DeployHTTP() (s string) {
-	origflags := f.flags() // flags for mux.Route functions
+	flags := f.flags(httpFlags) // flags for mux.Route functions
 
 	// walk the functions and register each one
 	cmds := []string{}
 	for _, fn := range f.handlers {
-		var flags = origflags
-		flags.entrypoint = ""
-		name := fn.path
-		if fn.r == nil {
-			// gflags is used when the function does not have a mux.Router
-			name = origflags.entrypoint
-		}
 
-		cmd := fmt.Sprintf("gcloud functions deploy %s \\\n", flags.String())
 		auth := ""
 		if fn.unauthenticated {
-			auth = "--unauthenticated"
+			auth = "--allow-unauthenticated"
 		}
 
-		cmd += "%s --trigger-http %s"
-		cmds = append(cmds, fmt.Sprintf(cmd, name, auth))
+		cmd := fmt.Sprintf("gcloud functions deploy %s %s --trigger-http %s", flags.String(), f.registrar, auth)
+
+		cmds = append(cmds, cmd)
 	}
 
 	// outputs a bash script the can be used to deploy the functions
@@ -198,13 +209,20 @@ func (f *FunctionRegistrar) WithProjectID(id string) *FunctionRegistrar {
 	return f
 }
 
-// WithEntryPoint sets the entry point for the functions when deploying
+// WithRegistrar sets the entry point for the functions when deploying
 // this is the actual name of the variable in your source code
 // otherwise it will use the register.SharedEntryPoint
 // again this assumes you have imported this package as register
 // and you have registered your functions using register.Shared
-func (f *FunctionRegistrar) WithEntrypoint(name string) *FunctionRegistrar {
-	f.entrypoint = name
+//
+// Cloud Functions may fail to deploy if the name provided here is
+// undefined or unexported in the top level of your package being deployed.
+//
+// For example:
+//     var FancyRegistrar = register.NewRegister().WithRegistrar("FancyRegistrar")
+//
+func (f *FunctionRegistrar) WithRegistrar(name string) *FunctionRegistrar {
+	f.registrar = name
 	return f
 }
 

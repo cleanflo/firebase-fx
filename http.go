@@ -1,10 +1,10 @@
 package register
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
-	"reflect"
-	"runtime"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -13,44 +13,33 @@ import (
 // it will route the request to the correct function
 func (f *FunctionRegistrar) HttpEntrypoint(w http.ResponseWriter, r *http.Request) {
 	f.http.ServeHTTP(w, r)
+
+	f.http.PathPrefix("/").HandlerFunc(defaultHandler)
 }
 
-// RegisterHTTP allows a user to register a HttpFunction without using mux.Router
-// Using this method, functions cannot be inlined and must be exported (ie. capitalized) by the package.
-// The deployment script for functions registered via this method will be in the below format:
-//   ~$ gcloud functions deploy  <FunctionName> --trigger-http --allow-unauthenticated
-// and can be executed like:
-//   ~$ curl "https://REGION-PROJECT_ID.cloudfunctions.net/FunctionName"
-func (f *FunctionRegistrar) RegisterHTTP(handler http.HandlerFunc) *HttpFunction {
-	fpath := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
-
-	fps := strings.Split(fpath, ".")
-	// // fpkg := fps[0]
-	fname := fps[len(fps)-1]
-
-	// r := f.http.HandleFunc(fname, handler)
-	fn := &HttpFunction{
-		reg: f,
-		// r:    r,
-		fn:   handler,
-		path: fname,
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s", r.URL.Path)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("request failed: %s", err), http.StatusBadRequest)
+		return
 	}
+	defer r.Body.Close()
 
-	f.handlers[fname] = fn
+	log.Printf("%s", body)
 
-	return fn
+	w.WriteHeader(http.StatusOK)
 }
 
 // HTTP registers the given path/name to an underlying mux.Router
 // add advanced routing options (Headers, Methods) to the returned HttpFunction
 // The deployment script for functions registered via this method will be in the below format:
-//   ~$ gcloud functions deploy Register.HttpEntrypoint --trigger-http --allow-unauthenticated
+//   ~$ gcloud functions deploy --entrypoint "Registrar.HttpEntrypoint" Registrar --trigger-http --allow-unauthenticated
 // and can be executed like:
-//   ~$ curl "https://REGION-PROJECT_ID.cloudfunctions.net/Register.HttpEntrypoint/{path}"
+//   ~$ curl "https://REGION-PROJECT_ID.cloudfunctions.net/Registrar/{path}"
 func (f *FunctionRegistrar) HTTP(path string, handler http.HandlerFunc) *HttpFunction {
 	r := f.http.HandleFunc(path, handler)
 
-	r = r.Name(path)
 	fn := &HttpFunction{
 		reg:  f,
 		r:    r,

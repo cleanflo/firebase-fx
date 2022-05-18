@@ -46,11 +46,11 @@ type FunctionRegistrar struct {
 	// remoteConfig map[RemoteConfigEventType]*RemoteConfigFunction // mapped by event type
 	// scheduler    map[string]*SchedulerFunction                   // mapped by event type
 
-	events     map[string]CloudDeployFunction // pointers to all functions with a generated name
-	projectID  string
-	entrypoint string
-	verbosity  VerbosityLevel
-	runtime    Runtime
+	events    map[string]CloudDeployFunction // pointers to all functions with a generated name
+	projectID string
+	registrar string
+	verbosity VerbosityLevel
+	runtime   Runtime
 }
 
 // NewRegister creates a new registrar with all top level maps initialized
