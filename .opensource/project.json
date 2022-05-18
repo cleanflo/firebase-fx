@@ -1,10 +1,13 @@
 {
     "name": "firebase-fx",
     "platforms": [
-        "Go"
+        "Go",
+        "Admin"
     ],
     "content": "README.md",
     "related": [
-        "GoogleCloudPlatform/functions-framework-go"
+        "GoogleCloudPlatform/functions-framework-go",
+        "firebase/firebase-functions",
+        "firebase/firebase-admin-go"
     ]
 }
