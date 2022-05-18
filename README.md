@@ -8,10 +8,10 @@ Meant to expose a similar API to the Firebase Functions package for node.js.
  - [ ] Deployment
     - [x] Output bash script
     - [ ] Profile memory for deployment: --memory flag
- - [ ] HTTP triggers
-    - [ ] Unauthenticated
-    - [ ] Methods, Headers, Host, Query
-    - [ ] Middleware
+ - [x] HTTP triggers
+    - [x] Unauthenticated
+    - [x] Methods, Headers, Host, Query
+    - [x] Middleware
  - [ ] Analytics
  - [x] Firebase Authentication triggers
  - [x] Firestore triggers
