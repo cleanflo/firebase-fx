@@ -2,12 +2,13 @@ package register
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeploy(t *testing.T) {
+func TestDeployCloud(t *testing.T) {
 	reg := NewRegister()
 
 	t.Run("Auth Register", func(t *testing.T) {
@@ -62,6 +63,16 @@ func TestDeploy(t *testing.T) {
 	})
 
 	t.Run("Deploy", func(t *testing.T) {
-		fmt.Println(reg.Deploy())
+		fmt.Println(reg.WithRegistrar("Registrar").DeployCloud())
+	})
+}
+
+func TestDeployHttp(t *testing.T) {
+	reg := NewRegister()
+	t.Run("Http Register", func(t *testing.T) {
+		reg.HTTP("test", func(w http.ResponseWriter, r *http.Request) {
+		})
+
+		fmt.Println(reg.WithRegistrar("Registrar").DeployHTTP())
 	})
 }

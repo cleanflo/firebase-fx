@@ -1,6 +1,9 @@
 package register
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,24 +13,52 @@ import (
 // it will route the request to the correct function
 func (f *FunctionRegistrar) HttpEntrypoint(w http.ResponseWriter, r *http.Request) {
 	f.http.ServeHTTP(w, r)
+
+	f.http.PathPrefix("/").HandlerFunc(defaultHandler)
 }
 
-// HTTP registers the given path to an underlying mux.Router
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s", r.URL.Path)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("request failed: %s", err), http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	log.Printf("%s", body)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// HTTP registers the given path/name to an underlying mux.Router
 // add advanced routing options (Headers, Methods) to the returned HttpFunction
+// The deployment script for functions registered via this method will be in the below format:
+//   ~$ gcloud functions deploy --entrypoint "Registrar.HttpEntrypoint" Registrar --trigger-http --allow-unauthenticated
+// and can be executed like:
+//   ~$ curl "https://REGION-PROJECT_ID.cloudfunctions.net/Registrar/{path}"
 func (f *FunctionRegistrar) HTTP(path string, handler http.HandlerFunc) *HttpFunction {
 	r := f.http.HandleFunc(path, handler)
+
 	fn := &HttpFunction{
 		reg:  f,
 		r:    r,
 		fn:   handler,
 		path: path,
 	}
+
+	f.handlers[path] = fn
+
 	return fn
 }
 
 // Middleware registers the given mux.MiddlewareFunc to the underlying mux.Router
 func (f *FunctionRegistrar) MiddleWare(wares ...mux.MiddlewareFunc) {
 	f.http.Use(wares...)
+}
+
+func (f *FunctionRegistrar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f.http.ServeHTTP(w, r)
 }
 
 // HttpFunction is a wrapper for mux.Route and the parent FunctionRegistrar
