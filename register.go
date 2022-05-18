@@ -51,6 +51,8 @@ type FunctionRegistrar struct {
 	registrar string
 	verbosity VerbosityLevel
 	runtime   Runtime
+
+	httpUnauthenticated bool
 }
 
 // NewRegister creates a new registrar with all top level maps initialized

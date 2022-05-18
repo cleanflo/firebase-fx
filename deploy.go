@@ -35,7 +35,7 @@ func (f flagKind) entrypoint() string {
 	case httpFlags:
 		return "HttpEntrypoint"
 	case cloudFlags:
-		return "Entrypoint"
+		return "EntryPoint"
 	default:
 		return ""
 	}
@@ -129,22 +129,14 @@ func (f *FunctionRegistrar) DeployCloud() (s string) {
 func (f *FunctionRegistrar) DeployHTTP() (s string) {
 	flags := f.flags(httpFlags) // flags for mux.Route functions
 
-	// walk the functions and register each one
-	cmds := []string{}
-	for _, fn := range f.handlers {
+	// outputs a bash script the can be used to deploy the functions
 
-		auth := ""
-		if fn.unauthenticated {
-			auth = "--allow-unauthenticated"
-		}
-
-		cmd := fmt.Sprintf("gcloud functions deploy %s %s --trigger-http %s", flags.String(), f.registrar, auth)
-
-		cmds = append(cmds, cmd)
+	auth := ""
+	if f.httpUnauthenticated {
+		auth = "--allow-unauthenticated"
 	}
 
-	// outputs a bash script the can be used to deploy the functions
-	s = strings.Join(cmds, " &&  \\\n")
+	s = fmt.Sprintf("gcloud functions deploy %s %s --trigger-http %s", flags.String(), f.registrar, auth)
 	return s
 }
 
@@ -238,6 +230,11 @@ const (
 // WithRuntime sets the runtime for the functions when deploying
 func (f *FunctionRegistrar) WithRuntime(runtime Runtime) *FunctionRegistrar {
 	f.runtime = runtime
+	return f
+}
+
+func (f *FunctionRegistrar) AllowUnauthenticated(t bool) *FunctionRegistrar {
+	f.httpUnauthenticated = t
 	return f
 }
 

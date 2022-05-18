@@ -63,18 +63,18 @@ func (f *FunctionRegistrar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // HttpFunction is a wrapper for mux.Route and the parent FunctionRegistrar
 type HttpFunction struct {
-	reg             *FunctionRegistrar
-	r               *mux.Route
-	unauthenticated bool
-	path            string
-	fn              http.HandlerFunc
+	reg *FunctionRegistrar
+	r   *mux.Route
+	// unauthenticated bool
+	path string
+	fn   http.HandlerFunc
 }
 
 // Unauthenticated marks the function as --allow-unauthenticated
-func (h *HttpFunction) Unauthenticated(t bool) *HttpFunction {
-	h.unauthenticated = t
-	return h
-}
+// func (h *HttpFunction) Unauthenticated(t bool) *HttpFunction {
+// 	h.unauthenticated = t
+// 	return h
+// }
 
 // Methods registers the given methods to the underlying mux.Route
 func (h *HttpFunction) Methods(methods ...string) *HttpFunction {
