@@ -32,7 +32,8 @@ func (d *Decoder) Decode(v interface{}) error {
 
 // FunctionRegistrar is the registrar for functions
 type FunctionRegistrar struct {
-	http *mux.Router // mapped by route
+	http     *mux.Router // mapped by route
+	handlers map[string]*HttpFunction
 
 	// authentication map[AuthEventType]*AuthenticationFunction              // mapped by event type
 	firestore  map[FirestoreEventType]map[string]*FirestoreFunction   // mapped by event type & path
@@ -56,8 +57,9 @@ type FunctionRegistrar struct {
 // nested maps are intialized when a function is registered
 func NewRegister() *FunctionRegistrar {
 	return &FunctionRegistrar{
-		http:   mux.NewRouter(),
-		events: make(map[string]CloudDeployFunction),
+		http:     mux.NewRouter(),
+		handlers: make(map[string]*HttpFunction),
+		events:   make(map[string]CloudDeployFunction),
 		// pubsub:         make(map[string]*PubSubFunction),
 		storage:    make(map[StorageEventType]map[string]*StorageFunction),
 		firestore:  make(map[FirestoreEventType]map[string]*FirestoreFunction),

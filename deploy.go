@@ -21,39 +21,65 @@ type cloudDeployer struct {
 	event    event
 }
 
-func (f *FunctionRegistrar) Deploy() (s string) {
-	projectId := f.projectID
-	if projectId == "" {
-		projectId = "$PROJECT_ID"
+type deployFlags struct {
+	projectID  string
+	entrypoint string
+	runtime    string
+	verbosity  string
+}
+
+func (f *FunctionRegistrar) flags() (flag deployFlags) {
+	flag.projectID = f.projectID
+	if flag.projectID == "" {
+		flag.projectID = "$PROJECT_ID"
 	}
-	flags := func() (s string) {
-		entrypoint := f.entrypoint
-		if entrypoint == "" {
-			entrypoint = "register.SharedEntrypoint"
-		}
+
+	flag.entrypoint = f.entrypoint
+	if flag.entrypoint == "" {
+		flag.entrypoint = "register.HttpEntrypoint"
+	}
+
+	flag.runtime = string(f.runtime)
+	if flag.runtime == "" {
+		flag.runtime = "go116"
+	}
+
+	if f.verbosity != WarningVerbosity {
+		flag.verbosity = f.verbosity.String()
+	} else {
+		flag.verbosity = WarningVerbosity.String()
+	}
+
+	return flag
+}
+
+func (f deployFlags) String() (s string) {
+	if f.projectID != "" {
+		s += fmt.Sprintf(" --project \"%s\"", f.projectID)
+	}
+
+	if f.entrypoint != "" {
 		s += fmt.Sprintf(" --entry-point \"%s\"", f.entrypoint)
-
-		runtime := f.runtime
-		if runtime == "" {
-			runtime = "go116"
-		}
-		s += fmt.Sprintf(" --runtime \"%s\"", runtime)
-
-		if projectId != "$PROJECT_ID" {
-			s += fmt.Sprintf(" --project \"%s\"", projectId)
-		}
-
-		if f.verbosity != WarningVerbosity {
-			s += fmt.Sprintf(" --verbosity \"%s\"", f.verbosity)
-		}
-
-		return s
 	}
+
+	if f.runtime != "" {
+		s += fmt.Sprintf(" --runtime \"%s\"", f.runtime)
+	}
+
+	if f.verbosity != "" {
+		s += fmt.Sprintf(" --verbosity \"%s\"", f.verbosity)
+
+	}
+	return s
+}
+
+func (f *FunctionRegistrar) DeployCloud() (s string) {
+	flags := f.flags()
 
 	// walk the functions and register each one
 	cmds := []string{}
 	for name, ev := range f.events {
-		cmd := fmt.Sprintf("gcloud functions deploy %s \\\n", flags())
+		cmd := fmt.Sprintf("gcloud functions deploy %s \\\n", flags.String())
 		switch ev.Event() {
 		case AuthenticationUserCreateEvent.Type(), AuthenticationUserDeleteEvent.Type():
 			cmd += "%s --trigger-event \"%s\""
@@ -61,7 +87,7 @@ func (f *FunctionRegistrar) Deploy() (s string) {
 
 		case FirestoreDocumentCreateEvent.Type(), FirestoreDocumentDeleteEvent.Type(), FirestoreDocumentUpdateEvent.Type(), FirestoreDocumentWriteEvent.Type():
 			cmd += "%s --trigger-event \"%s\" --trigger-resource \"projects/%s/databases/(default)/documents/%s\""
-			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), projectId, ev.Resource()))
+			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), flags.projectID, ev.Resource()))
 
 		case PubSubPublishEvent.Type():
 			cmd += "%s --trigger-topic \"%s\""
@@ -69,7 +95,7 @@ func (f *FunctionRegistrar) Deploy() (s string) {
 
 		case RealtimeDBRefCreateEvent.Type(), RealtimeDBRefDeleteEvent.Type(), RealtimeDBRefUpdateEvent.Type(), RealtimeDBRefWriteEvent.Type():
 			cmd += "%s --trigger-event \"%s\" --trigger-resource \"projects/_/instances/%s/refs/%s\""
-			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), projectId, ev.Resource()))
+			cmds = append(cmds, fmt.Sprintf(cmd, name, ev.Event().String(), flags.projectID, ev.Resource()))
 
 		case StorageObjectFinalizeEvent.Type(), StorageObjectArchiveEvent.Type(), StorageObjectDeleteEvent.Type(), StorageObjectMetadataUpdateEvent.Type():
 			cmd += "%s --trigger-event \"%s\" --trigger-resource \"%s\""
@@ -79,6 +105,50 @@ func (f *FunctionRegistrar) Deploy() (s string) {
 
 	// outputs a bash script the can be used to deploy the functions
 	s = strings.Join(cmds, " &&  \\\n")
+	return s
+}
+
+func (f *FunctionRegistrar) DeployHTTP() (s string) {
+	origflags := f.flags() // flags for mux.Route functions
+
+	// walk the functions and register each one
+	cmds := []string{}
+	for _, fn := range f.handlers {
+		var flags = origflags
+		flags.entrypoint = ""
+		name := fn.path
+		if fn.r == nil {
+			// gflags is used when the function does not have a mux.Router
+			name = origflags.entrypoint
+		}
+
+		cmd := fmt.Sprintf("gcloud functions deploy %s \\\n", flags.String())
+		auth := ""
+		if fn.unauthenticated {
+			auth = "--unauthenticated"
+		}
+
+		cmd += "%s --trigger-http %s"
+		cmds = append(cmds, fmt.Sprintf(cmd, name, auth))
+	}
+
+	// outputs a bash script the can be used to deploy the functions
+	s = strings.Join(cmds, " &&  \\\n")
+	return s
+}
+
+func (f *FunctionRegistrar) Deploy() (s string) {
+	cmd := []string{}
+	if cloud := f.DeployCloud(); cloud != "" {
+		cmd = append(cmd, cloud)
+	}
+
+	if http := f.DeployHTTP(); http != "" {
+		cmd = append(cmd, http)
+	}
+
+	// outputs a bash script the can be used to deploy the functions
+	s = strings.Join(cmd, " &&  \\\n")
 	return s
 }
 
